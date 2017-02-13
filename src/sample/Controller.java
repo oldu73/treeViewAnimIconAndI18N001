@@ -1,12 +1,12 @@
 package sample;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
+import javafx.util.Callback;
 
 import java.util.ArrayList;
 
@@ -57,9 +57,11 @@ public class Controller {
     @FXML
     private void handleAnimate() {
 
-        treeView.getRoot().setGraphic(animateImageView);
+        treeView.getRoot().setValue("Animate..");
 
-        //TODO change root node text(..) and style to italic
+        //treeView.refresh();
+
+        System.out.println("Animate :" + treeView.getRoot().getGraphic());
 
     }
 
@@ -67,6 +69,10 @@ public class Controller {
     private void handleQuite() {
 
         treeView.getRoot().setGraphic(quiteImageView);
+
+        treeView.getRoot().setValue("Cars");
+
+        System.out.println("Cars");
 
     }
 
@@ -106,9 +112,55 @@ public class Controller {
         // Create the TreeView
         TreeView treeView = new TreeView();
 
+        treeView.setCellFactory(new Callback<TreeView<String>, TreeCell<String>>() {
+            private int created;
+
+            @Override
+            public TreeCell<String> call(TreeView<String> p) {
+                created++;
+                System.out.println("=================Created " + created);
+                return new TreeCell<String>() {
+                    private int called;
+
+                    @Override
+                    protected void updateItem(String value, boolean empty) {
+                        final int cellIndex = created;
+                        called++;
+                        super.updateItem(value, empty);
+                        //final String text = (value == null || empty) ? null : String.valueOf(value);
+                        final String text = (value == null || empty) ? null : value;
+                        setText(text);
+                        System.out.println("Called " + cellIndex + " " + called + " / " + getTreeView().getTreeItemLevel(getTreeItem()) + " / " + text);
+
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            if (getTreeView().getTreeItemLevel(getTreeItem()) == 0) {
+                                setGraphic(quiteImageView);
+
+                                if (value.contains("Animate")) {
+                                    System.out.println("Coucou..");
+
+                                    setTextFill(Color.RED);
+                                    setStyle("-fx-background-color: yellow; -fx-font-style: italic");
+                                    //setStyle("-fx-font-style: italic");
+
+                                    setGraphic(animateImageView);
+                                } else {
+                                    setTextFill(Color.BLACK);
+                                    setStyle("");
+                                }
+                            }
+                        }
+
+                    }
+                };
+            }
+        });
+
         // Create the Root TreeItem
         TreeItem rootItem = new TreeItem("Cars");
-        rootItem.setGraphic(quiteImageView);
+        //rootItem.setGraphic(quiteImageView);
 
         // Add children to the root
         rootItem.getChildren().addAll(cars);
